@@ -20,6 +20,7 @@
 params ["_aircraft", "_unit", "_args"];
 _args params [["_cargo", objNull, [objNull]], ["_cargoMode", -1, [0]]];
 
+[QGVAR(localizeBundle), [_unit, _cargo]] call CBA_fnc_serverEvent;
 _unit setVariable [QGVAR(cargo), _cargo];
 moveOut _unit;
 
@@ -27,7 +28,9 @@ moveOut _unit;
     params ["_unit"];
     vehicle _unit == _unit
 }, {
-    params ["_unit", "_aircraft", "_cargo", "_cargoMode"];
+    params ["_unit", "_aircraft", "_cargo"];
+    _unit setDir getDir _aircraft;
+    _unit setVelocity velocity _aircraft;
 
     switch _cargoMode do {
         case CARGOMODEVIV: {
@@ -49,18 +52,14 @@ moveOut _unit;
             _cargo hideObjectGlobal false;
         };
     };
-// TODO: Localize _cargo to _unit
+
     // Rope top helper, workaround parachute rope visual bug, allow cut
     private _ropeTop = createVehicle ["ace_fastroping_helper", getPos _unit, [], 0, "CAN_COLLIDE"];
     _unit setVariable [QGVAR(loweringLine), _ropeTop];
     _ropeTop allowDamage false;
     _ropeTop disableCollisionWith _unit;
 
-    _cargo disableCollisionWith _unit;
-    _cargo attachTo [_unit, [0, 1, -5]];
-    detach _cargo;
-    _cargo setVelocity velocity _unit;
-
+    _cargo attachTo [_ropeTop, [0, 1, -5]];
     boundingBoxReal _cargo params ["", "", "_cargoTop"];
     private _rope = ropeCreate [
         _ropeTop, [0, 0, 0],
@@ -69,9 +68,18 @@ moveOut _unit;
     ];
 
     [{
-        params ["_unit", "_ropeTop"];
+        params ["_unit", "_ropeTop", "_cargo"];
         _ropeTop attachTo [_unit, [0,0,0]];
-    }, [_unit, _ropeTop]] call CBA_fnc_execNextFrame;
+        _cargo attachTo [_unit, [0, -1, -5]];
+
+        [{
+            params ["_unit", "_cargo"];
+            detach _cargo;
+            _ropeTop disableCollisionWith _unit;
+            _cargo setVelocity (velocity _unit vectorAdd [0, 0, -0.5]);
+        }, [_unit, _cargo], 1] call CBA_fnc_waitAndExecute;
+
+    }, [_unit, _ropeTop, _cargo]] call CBA_fnc_execNextFrame;
 
     [QGVAR(checkLandedPFH), [_ropeTop, _cargo]] call CBA_fnc_serverEvent;
 
@@ -94,6 +102,6 @@ moveOut _unit;
         // TODO: handle ACE reserve chute and landing
     }, true] call CBA_fnc_addPlayerEventHandler];
 
-}, [_unit, _aircraft, _cargo, _cargoMode], 1 ,{
+}, [_unit, _aircraft, _cargo], 1 ,{
     diag_log "mttb_main_fnc_tandemJump timed out waiting for _unloadSucess";
 }] call CBA_fnc_waitUntilAndExecute;

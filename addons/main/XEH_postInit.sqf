@@ -11,24 +11,33 @@ if (isServer) then {
     }] call CBA_fnc_addEventHandler;
 
     [QGVAR(checkLandedPFH), {
-        params ["_ropeTop", "_holder"];
+        params ["_unit", "_cargo"];
         [{
-            params ["_ropeTop", "_pfhID"];
-            if (speed _ropeTop < 1 && {getPos _ropeTop # 2 < 1}) exitWith {
-                deleteVehicle _ropeTop;
+            params ["_unit", "_pfhID"];
+            if (speed _unit < 1 && {getPos _unit # 2 < 1}) exitWith {
+                deleteVehicle _unit;
                 [_pfhID] call CBA_fnc_removePerFrameHandler;
             };
-        }, 1, _ropeTop] call CBA_fnc_addPerFrameHandler;
+        }, 1, _unit] call CBA_fnc_addPerFrameHandler;
         [{
-            params ["_holder", "_pfhID"];
-            if (speed _holder < 1 && {getPos _holder # 2 < 1}) exitWith {
-                private _pos = getPos _holder;
+            params ["_cargo", "_pfhID"];
+            if (speed _cargo < 1 && {getPos _cargo # 2 < 1} && {isNull ropeAttachedTo _cargo}) exitWith {
+                private _pos = getPos _cargo;
                 _pos set [2, 0];
-                _holder setPos _pos;
+                _cargo setPos _pos;
                 [_pfhID] call CBA_fnc_removePerFrameHandler;
             };
-        }, 1, _holder] call CBA_fnc_addPerFrameHandler;
+        }, 1, _cargo] call CBA_fnc_addPerFrameHandler;
     }] call CBA_fnc_addEventHandler;
+
+    [QGVAR(localizeBundle), {
+        params ["_unit", "_cargo"];
+        private _unitOwner = owner _unit;
+        if (_unitOwner != owner _cargo) then {
+            _cargo setOwner _unitOwner;
+        };
+    }] call CBA_fnc_addEventHandler;
+
 };
 
 #include "ACE_Actions.sqf"
