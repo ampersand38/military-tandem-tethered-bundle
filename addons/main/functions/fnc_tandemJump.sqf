@@ -48,8 +48,6 @@ moveOut _unit;
             private _cargoSpace = [_aircraft] call ace_cargo_fnc_getCargoSpaceLeft;
             private _cargoSize = [_cargo] call ace_cargo_fnc_getSizeItem;
             _aircraft setVariable ["ace_cargo_space", (_cargoSpace + _cargoSize), true];
-
-            _cargo hideObjectGlobal false;
         };
     };
 

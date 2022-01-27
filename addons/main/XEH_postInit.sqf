@@ -32,6 +32,9 @@ if (isServer) then {
 
     [QGVAR(localizeBundle), {
         params ["_unit", "_cargo"];
+        if (isObjectHidden _cargo) then {
+            _cargo hideObjectGlobal false;
+        };
         private _unitOwner = owner _unit;
         if (_unitOwner != owner _cargo) then {
             _cargo setOwner _unitOwner;
