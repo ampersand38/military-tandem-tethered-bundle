@@ -15,3 +15,13 @@ class CfgPatches {
 };
 
 #include "CfgEventHandlers.hpp"
+
+class CfgVehicles {
+    class UAV_01_base_F;
+    class GVAR(drogue): UAV_01_base_F {
+        author = "Ampersand";
+        _generalMacro = QGVAR(drogue);
+        scope = 1;
+        bodyFrictionCoef = 0.1;
+    };
+};

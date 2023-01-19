@@ -17,6 +17,8 @@
  * Public: No
  */
 
+#define TERMINALSPEED 55
+
 params ["_aircraft", "_unit", "_args"];
 _args params [["_cargo", objNull, [objNull]], ["_cargoMode", -1, [0]]];
 
@@ -32,7 +34,7 @@ moveOut _unit;
     _unit setDir getDir _aircraft;
     _unit setVelocity velocity _aircraft;
 
-    switch _cargoMode do {
+    switch (_cargoMode) do {
         case CARGOMODEVIV: {
             // Mass
             _aircraft setMass (getMass _aircraft - getMass _cargo);
@@ -55,27 +57,38 @@ moveOut _unit;
     private _ropeTop = createVehicle ["ace_fastroping_helper", getPos _unit, [], 0, "CAN_COLLIDE"];
     _unit setVariable [QGVAR(loweringLine), _ropeTop];
     _ropeTop allowDamage false;
-    _ropeTop disableCollisionWith _unit;
 
-    _cargo attachTo [_ropeTop, [0, 1, -5]];
     boundingBoxReal _cargo params ["", "", "_cargoTop"];
     private _rope = ropeCreate [
-        _ropeTop, [0, 0, 0],
-        _cargo, getCenterOfMass _cargo vectorAdd [0,0,1],
+        _ropeTop, [0, 0.1, -0.5],
+        _cargo, getCenterOfMass _cargo vectorAdd [0, 0, 0.5],
         5
     ];
 
     [{
         params ["_unit", "_ropeTop", "_cargo"];
-        _ropeTop attachTo [_unit, [0,0,0]];
-        _cargo attachTo [_unit, [0, -1, -5]];
+
+        _ropeTop attachTo [_unit, [0, 0, 0]];
+        _cargo attachTo [_unit, [0, 0, -1]];
 
         [{
-            params ["_unit", "_cargo"];
+            params ["_unit", "_ropeTop", "_cargo"];
+
+            _unit allowDamage false;
             detach _cargo;
-            _ropeTop disableCollisionWith _unit;
-            _cargo setVelocity (velocity _unit vectorAdd [0, 0, -0.5]);
-        }, [_unit, _cargo], 1] call CBA_fnc_waitAndExecute;
+            _cargo setVelocity velocity _unit;
+
+            [{
+                params ["_unit", "_pfhID"];
+                if (_unit != vehicle _unit) exitWith {
+                    [_pfhID] call CBA_fnc_removePerFrameHandler;
+                };
+                _velocity = velocity _unit;
+                if (vectorMagnitude _velocity > TERMINALSPEED ) then {
+                    _unit setVelocity (vectorNormalized _velocity vectorMultiply TERMINALSPEED);
+                };
+            }, 1, _unit] call CBA_fnc_addPerFrameHandler;
+        }, [_unit, _ropeTop, _cargo], 1] call CBA_fnc_waitAndExecute;
 
     }, [_unit, _ropeTop, _cargo]] call CBA_fnc_execNextFrame;
 
@@ -85,11 +98,11 @@ moveOut _unit;
         params ["_unit", "_newVehicle", "_oldVehicle"];
 
         if (_newVehicle isKindOf "ParachuteBase") then {
+            _unit allowDamage true;
             private _ropeTop = _unit getVariable [QGVAR(loweringLine), objNull];
             _ropeTop attachTo [_newVehicle, [0,0,0]];
 
             private _cargo = _unit getVariable [QGVAR(cargo), objNull];
-            _cargo enableCollisionWith _unit;
             _unit setVariable [QGVAR(cargo), objNull];
 
             private _parachuteCheckEH = _unit getVariable [QGVAR(parachuteCheckEH), -1];

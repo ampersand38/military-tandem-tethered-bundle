@@ -11,14 +11,15 @@ if (isServer) then {
     }] call CBA_fnc_addEventHandler;
 
     [QGVAR(checkLandedPFH), {
-        params ["_unit", "_cargo"];
+        params ["_ropeTop", "_cargo"];
         [{
-            params ["_unit", "_pfhID"];
-            if (speed _unit < 1 && {getPos _unit # 2 < 1}) exitWith {
-                deleteVehicle _unit;
+            params ["_ropeTop", "_pfhID"];
+            if (speed _ropeTop < 1 && {getPos _ropeTop # 2 < 1}) exitWith {
+                deleteVehicle _ropeTop;
                 [_pfhID] call CBA_fnc_removePerFrameHandler;
             };
-        }, 1, _unit] call CBA_fnc_addPerFrameHandler;
+        }, 1, _ropeTop] call CBA_fnc_addPerFrameHandler;
+        /*
         [{
             params ["_cargo", "_pfhID"];
             if (speed _cargo < 1 && {getPos _cargo # 2 < 1} && {isNull ropeAttachedTo _cargo}) exitWith {
@@ -28,6 +29,7 @@ if (isServer) then {
                 [_pfhID] call CBA_fnc_removePerFrameHandler;
             };
         }, 1, _cargo] call CBA_fnc_addPerFrameHandler;
+        */
     }] call CBA_fnc_addEventHandler;
 
     [QGVAR(localizeBundle), {
