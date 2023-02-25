@@ -37,5 +37,6 @@ _bundle ropeDetach _rope;
 // also looks like the rope snapping under tension once cut
 
 [{
+    params ["_unit", "_ropeTop", "_bundle"];
     _ropeTop attachTo [_bundle, [0.1,-0.45,-0.6]];
-}, [_unit, _ropeTop, _cargo]] call CBA_fnc_execNextFrame;
+}, [_unit, _ropeTop, _bundle]] call CBA_fnc_execNextFrame;
