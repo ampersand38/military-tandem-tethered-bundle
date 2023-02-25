@@ -31,6 +31,7 @@ moveOut _unit;
     vehicle _unit == _unit
 }, {
     params ["_unit", "_aircraft", "_cargo"];
+    _unit setPosASL (_aircraft modelToWorldVisualWorld [0, -((0 boundingBoxReal _aircraft) select 2), 0]);
     _unit setDir getDir _aircraft;
     _unit setVelocity velocity _aircraft;
 
